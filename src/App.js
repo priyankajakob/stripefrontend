@@ -1,23 +1,56 @@
-import logo from './logo.svg';
-import './App.css';
+import React,{useState} from 'react'
+import './App.css'
+import StripeCheckout from "react-stripe-checkout"
 
 function App() {
+
+    const [product,setProduct] = useState({
+      name:"React from FB",
+      price :10,
+      productBy: "facebook"
+    })
+
+    const makePayment = (token)=>{
+      const body = {
+        token,
+        product
+      }
+
+      const headers = {
+        "Content-type":"applications/json"
+      }
+
+      return fetch(`https://localhost:8282/payment`,{
+        method : "POST",
+        headers,
+        body : JSON.stringify(body)
+      })
+      .then(response=>{
+        console.log(response.json())
+        const {status}=response
+        console.log(status)
+      })
+      .catch(error=>{
+        console.log(error)
+      })
+    }
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
+      <p>
+      <StripeCheckout 
+        stripekey={process.env.REACT_APP_KEY} 
+        token={makePayment} 
+        name="Buy React"
+        amount={product.price*100}
+        shippingAddress
+        billingAddress
         >
-          Learn React
-        </a>
-      </header>
+
+        <button>Buy React in just $ {product.price}</button>
+        </StripeCheckout>
+      </p>
+        
     </div>
   );
 }
